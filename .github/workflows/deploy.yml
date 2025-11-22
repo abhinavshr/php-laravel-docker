@@ -1,0 +1,27 @@
+name: Deploy to Render and Run Migrations
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Run migrations remotely
+        run: |
+          curl -X POST https://api.render.com/v1/services/YOUR_SERVICE_ID/deploys \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -H "Content-Type: application/json"
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
